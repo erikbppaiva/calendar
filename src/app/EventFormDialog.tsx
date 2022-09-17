@@ -5,26 +5,14 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { FormControl, InputLabel, MenuItem, Select } from "@material-ui/core";
-import { ICalendar } from "./backend";
+import { cretEventEndPoint, ICalendar, IEditingEvent } from "./backend";
 import { useEffect, useState } from "react";
-
-export interface IEditingEvent {
-  id?: number;
-  date: string;
-  time?: string;
-  desc: string;
-  calendarId: number;
-}
 
 interface IEventFormDialog {
   event: IEditingEvent | null;
   calendars: ICalendar[];
-  onClose: () => void;
-}
-
-function save(evt: React.FormEvent) {
-  evt.preventDefault();
-  console.log("save");
+  onCancel: () => void;
+  onSave: () => void;
 }
 
 export function EventFormDialog(props: IEventFormDialog) {
@@ -32,11 +20,19 @@ export function EventFormDialog(props: IEventFormDialog) {
   useEffect(() => {
     setEvent(props.event);
   }, [props.event]);
+
+  function save(evt: React.FormEvent) {
+    evt.preventDefault();
+
+    if (event) {
+      cretEventEndPoint(event).then(props.onSave);
+    }
+  }
   return (
     <div>
       <Dialog
         open={!!event}
-        onClose={props.onClose}
+        onClose={props.onCancel}
         aria-labelledby="form-dialog-title"
       >
         <form onSubmit={save}>
@@ -94,7 +90,7 @@ export function EventFormDialog(props: IEventFormDialog) {
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button type="button" onClick={props.onClose}>
+            <Button type="button" onClick={props.onCancel}>
               Cancelar
             </Button>
             <Button type="submit" color="primary">
