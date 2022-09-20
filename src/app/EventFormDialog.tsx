@@ -4,9 +4,21 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import { FormControl, InputLabel, MenuItem, Select } from "@material-ui/core";
-import { cretEventEndPoint, ICalendar, IEditingEvent } from "./backend";
-import { useEffect, useState } from "react";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@material-ui/core";
+import {
+  cretEventEndPoint,
+  deleteEventEndPoint,
+  ICalendar,
+  IEditingEvent,
+  updateEventEndPoint,
+} from "./backend";
+import { useEffect, useState, useRef } from "react";
 
 interface IEventFormDialog {
   event: IEditingEvent | null;
@@ -14,18 +26,58 @@ interface IEventFormDialog {
   onCancel: () => void;
   onSave: () => void;
 }
+interface IvalidationErrors {
+  [field: string]: string;
+}
 
 export function EventFormDialog(props: IEventFormDialog) {
   const [event, setEvent] = useState<IEditingEvent | null>(props.event);
+  const [errors, setErrors] = useState<IvalidationErrors | null>({});
+
+  const inputData = useRef<HTMLInputElement | null>();
+  const inputDesc = useRef<HTMLInputElement | null>();
+
   useEffect(() => {
     setEvent(props.event);
+    setErrors({});
   }, [props.event]);
+
+  const isNew = !event?.id;
+
+  function validate(): boolean {
+    if (event) {
+      const currentErros: IvalidationErrors = {};
+      if (!event.date) {
+        currentErros["date"] = "A data deve ser preenchido";
+        inputData.current?.focus();
+      }
+      if (!event.desc) {
+        currentErros["desc"] = "A descrição deve ser preenchido";
+        inputDesc.current?.focus();
+      }
+      //retorna uma quantidade de chaves e retorna a quantidade
+      setErrors(currentErros);
+      return Object.keys(currentErros).length === 0;
+    }
+    return false;
+  }
 
   function save(evt: React.FormEvent) {
     evt.preventDefault();
 
     if (event) {
-      cretEventEndPoint(event).then(props.onSave);
+      if (validate()) {
+        if (isNew) {
+          cretEventEndPoint(event).then(props.onSave);
+        } else {
+          updateEventEndPoint(event).then(props.onSave);
+        }
+      }
+    }
+  }
+  function deleteEvent(evt: React.FormEvent) {
+    if (event) {
+      deleteEventEndPoint(event.id!).then(props.onSave);
     }
   }
   return (
@@ -36,9 +88,12 @@ export function EventFormDialog(props: IEventFormDialog) {
         aria-labelledby="form-dialog-title"
       >
         <form onSubmit={save}>
-          <DialogTitle id="form-dialog-title">Criar Evento</DialogTitle>
+          <DialogTitle id="form-dialog-title">
+            {isNew ? "Criar Evento" : "Editar evento"}
+          </DialogTitle>
           <DialogContent>
             <TextField
+              inputRef={inputData}
               type="date"
               margin="normal"
               label="Date"
@@ -47,8 +102,11 @@ export function EventFormDialog(props: IEventFormDialog) {
               onChange={(evt) =>
                 !(event && setEvent({ ...event, date: evt.target.value }))
               }
+              error={!!errors?.date}
+              helperText={errors?.date}
             />
             <TextField
+              inputRef={inputDesc}
               autoFocus
               margin="normal"
               label="Descrição"
@@ -57,6 +115,8 @@ export function EventFormDialog(props: IEventFormDialog) {
               onChange={(evt) =>
                 event && setEvent({ ...event, desc: evt.target.value })
               }
+              error={!!errors?.desc}
+              helperText={errors?.desc}
             />
             <TextField
               type="time"
@@ -90,6 +150,12 @@ export function EventFormDialog(props: IEventFormDialog) {
             </FormControl>
           </DialogContent>
           <DialogActions>
+            {!isNew && (
+              <Button type="button" onClick={deleteEvent}>
+                Excluir
+              </Button>
+            )}
+            <Box flex="1"></Box>
             <Button type="button" onClick={props.onCancel}>
               Cancelar
             </Button>

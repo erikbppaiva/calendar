@@ -9,6 +9,7 @@ import TableRow from "@material-ui/core/TableRow";
 import { Box } from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
 import { ICalendar, IEvent } from "./backend";
+import React from "react";
 
 const DAYS_OF_WEEK = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
 
@@ -50,10 +51,18 @@ const useStyles = makeStyles({
 
 interface ICalendarProps {
   weeks: ICalenderCell[][];
+  onClickDay: (date: string) => void;
+  onClickEvent: (event: IEvent) => void;
 }
 export default function Calendar(props: ICalendarProps) {
   const { weeks } = props;
   const classes = useStyles();
+
+  function handleClick(evt: React.MouseEvent, date: string) {
+    if (evt.target === evt.currentTarget) {
+      props.onClickDay(date);
+    }
+  }
 
   return (
     <TableContainer style={{ flex: "1" }} component={"div"}>
@@ -71,12 +80,20 @@ export default function Calendar(props: ICalendarProps) {
           {weeks.map((week, i) => (
             <TableRow key={i}>
               {week.map((cell) => (
-                <TableCell align="center" key={cell.date}>
+                <TableCell
+                  align="center"
+                  key={cell.date}
+                  onClick={(mouseEvent) => handleClick(mouseEvent, cell.date)}
+                >
                   <div className={classes.dayOfManth}>{cell.dayOfManth}</div>
                   {cell.events.map((event) => {
                     const color = event.calendar.color;
                     return (
-                      <button className={classes.event} key={event.id}>
+                      <button
+                        className={classes.event}
+                        key={event.id}
+                        onClick={() => props.onClickEvent(event)}
+                      >
                         {event.time && (
                           <>
                             <Icon style={{ color }} fontSize="inherit">
