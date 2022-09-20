@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextField } from "@material-ui/core";
+import { Box, Button, TextField } from "@material-ui/core";
 import Container from "@material-ui/core/Container";
 
 export function LoginScreen() {
@@ -35,9 +35,14 @@ export function LoginScreen() {
           onChange={(evt) => setPassoword(evt.target.value)}
           variant="outlined"
         />
-        <div>
-          <Button />
-        </div>
+        <Box textAlign='right' marginTop='16px'>
+          <Button
+            variant="contained"
+            color="primary"
+          >
+            Entrar
+          </Button>
+        </Box>
       </form>
     </Container>
   );

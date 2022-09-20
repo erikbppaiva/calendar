@@ -59,3 +59,6 @@ function handleresponse(resp: Response) {
     throw new Error(resp.statusText);
   }
 }
+export function sigIntEndPoint(email: string, senha: string): Promise<void> {
+  return fetch(`http://localhost:8080/auth/user`, {}).then(handleresponse);
+}
