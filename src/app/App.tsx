@@ -6,36 +6,42 @@ import {
   Route,
   Switch,
 } from "react-router-dom";
-import { getUserEventEndPoint } from "./backend";
+import { getUserEventEndPoint, IUser } from "./backend";
 import CalenderScreen from "./CalenderScreen";
 import { getToday } from "./dateFunctions";
 import { LoginScreen } from "./LoginScreen";
+import { userContext, singOutContext } from "./authContext";
 
 function App() {
   const month = getToday().substring(0, 7);
+  const [user, setUser] = useState<IUser | null>(null);
 
-  const [hasSession, setHasSession] = useState(false);
   useEffect(() => {
-    getUserEventEndPoint().then(
-      () => setHasSession(true),
-      () => setHasSession(false)
-    );
+    getUserEventEndPoint().then(setUser, singOut);
   }, []);
-
-  if (hasSession) {
+  function singOut() {
+    setUser(null);
+  }
+  if (user) {
     return (
-      <Router>
-        <Switch>
-          <Route path="/calendar/:month">
-            <CalenderScreen />
-          </Route>
-          <Redirect to={{ pathname: "/calendar/" + month }}></Redirect>
-        </Switch>
-      </Router>
+      <userContext.Provider value={user}>
+        <singOutContext.Provider value={singOut}>
+          <Router>
+            <Switch>
+              <Route path="/calendar/:month">
+                <CalenderScreen onSigOut={singOut} />
+              </Route>
+              <Redirect to={{ pathname: "/calendar/" + month }}></Redirect>
+            </Switch>
+          </Router>
+        </singOutContext.Provider>
+      </userContext.Provider>
     );
   } else {
-    return <LoginScreen />;
+    return <LoginScreen onSignIn={setUser} />;
   }
 }
 
 export default App;
+
+//TERMINEI EM AULA 9.2 2:05min

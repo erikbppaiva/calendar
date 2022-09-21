@@ -1,17 +1,15 @@
 /** @format */
 
 import { Box } from "@material-ui/core";
-
 import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
-import Avatar from "@material-ui/core/Avatar";
-
 import { addMonths, formataMonth } from "./dateFunctions";
-
 import { Link } from "react-router-dom";
+import UserMenu from "./UserMenu";
 
 interface ICalendarProps {
   month: string;
+  onSigOut: () => void;
 }
 
 export default function CalenderHeader(props: ICalendarProps) {
@@ -43,11 +41,7 @@ export default function CalenderHeader(props: ICalendarProps) {
       <Box flex="1" marginLeft="16px" component="h3">
         {formataMonth(month)}
       </Box>
-      <IconButton aria-label="Usúario ">
-        <Avatar>
-          <Icon>person</Icon>
-        </Avatar>
-      </IconButton>
+      <UserMenu onSigOut={props.onSigOut} />
     </Box>
   );
 }
